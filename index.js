@@ -47,7 +47,6 @@ app.get("/", async (req, res) => {
                         },
                 });
 
-                // console.log(metaData);
         res.send(getRows.data);
         }catch (err){
                 console.log(err);
@@ -58,6 +57,7 @@ const parseToNumber = (strNumber) => {
         return Number(strNumber.replace(/,/g, ''));
 }
 //
-app.listen(8080, (req, res) => console.log("running on 1337"));
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, (req, res) => console.log(`running on ${PORT}`));
 // console.log("running on 1337");
 //
