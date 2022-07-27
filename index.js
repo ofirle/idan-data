@@ -1,10 +1,42 @@
 const axios = require('axios');
 const {google} = require("googleapis")
 const express = require("express");
+const schedule = require('node-schedule');
+
+const job = schedule.scheduleJob('0 * * * * *', async function(){
+        try {
+                const data = await fetchData();
+                console.log(`new row as been added: ${JSON.stringify(data)}`);
+        }catch (err) {
+                console.log(`failed to fetch data. error: ${err.messag}e`);
+        }
+});
 
 const app = express();
 
 app.get("/", async (req, res) => {
+        try {
+                const auth = new google.auth.GoogleAuth({
+                        keyFile: "credentials.json",
+                        scopes: "https://www.googleapis.com/auth/spreadsheets",
+                });
+                const client = await auth.getClient();
+                const spreadsheetId = "17gGWtBRg8hPa58JCj49I8rNwE20CZxoCi_v0jmlfIec";
+                const googleSheets = google.sheets({ version: "v4", auth: client });
+
+                const getRows = await googleSheets.spreadsheets.values.get({
+                        auth,
+                        spreadsheetId,
+                        range: "Sheet1"
+                });
+
+                res.send(getRows.data);
+        }catch (err){
+                console.log(err);
+        }
+});
+
+const fetchData = async () => {
         try {
                 const url = 'https://www.noga-iso.co.il/Umbraco/Api/Documents/GetElectricalData';
                 const response = await axios(url)
@@ -22,7 +54,7 @@ app.get("/", async (req, res) => {
                 });
                 const client = await auth.getClient();
                 const spreadsheetId = "17gGWtBRg8hPa58JCj49I8rNwE20CZxoCi_v0jmlfIec";
-                const googleSheets = google.sheets({ version: "v4", auth: client });
+                const googleSheets = google.sheets({version: "v4", auth: client});
 
                 const getRows = await googleSheets.spreadsheets.values.get({
                         auth,
@@ -34,6 +66,7 @@ app.get("/", async (req, res) => {
                 const lastId = lastRow[0];
                 const newId = lastId === 'ID' ? 1 : Number(lastId) + 1;
                 const date = new Date();
+                console.log(date);
                 date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
                 await googleSheets.spreadsheets.values.append({
                         auth,
@@ -46,12 +79,18 @@ app.get("/", async (req, res) => {
                                 ],
                         },
                 });
-
-        res.send(getRows.data);
+                return {
+                        id: newId,
+                        power_reserve: currentPowerReserve,
+                        power_consumption: currentPowerConsumption,
+                        peak_load: peakLoad,
+                        peak_power_reserve: peakPowerReserve,
+                        date: date
+                }
         }catch (err){
-                console.log(err);
+                throw err;
         }
-});
+}
 
 const parseToNumber = (strNumber) => {
         return Number(strNumber.replace(/,/g, ''));
