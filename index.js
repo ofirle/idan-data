@@ -3,7 +3,7 @@ const {google} = require("googleapis")
 const express = require("express");
 const schedule = require('node-schedule');
 
-const job = schedule.scheduleJob('0 * * * * *', async function(){
+const job = schedule.scheduleJob('* */1 * * * *', async function(){
         try {
                 const data = await fetchData();
                 console.log(`new row as been added: ${JSON.stringify(data)}`);
@@ -67,7 +67,7 @@ const fetchData = async () => {
                 const newId = lastId === 'ID' ? 1 : Number(lastId) + 1;
                 const date = new Date();
                 console.log(date);
-                date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+                date.setMinutes(date.getMinutes() + 180)
                 await googleSheets.spreadsheets.values.append({
                         auth,
                         spreadsheetId,
