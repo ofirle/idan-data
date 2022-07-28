@@ -3,8 +3,10 @@ const {google} = require("googleapis")
 const express = require("express");
 const schedule = require('node-schedule');
 
-const job = schedule.scheduleJob(' */30 * * * *', async function(){
+const job = schedule.scheduleJob(' */1 * * * *', async function(){
         try {
+                const date = new Date();
+                if(date.getMinutes() !== 0 && date.getMinutes() !== 30) return;
                 const data = await fetchData();
                 console.log(`new row as been added: ${JSON.stringify(data)}`);
         }catch (err) {
