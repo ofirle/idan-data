@@ -5,6 +5,8 @@ const schedule = require('node-schedule');
 
 const job = schedule.scheduleJob(' */1 * * * *', async function(){
         try {
+                const url = "https://idan-data.herokuapp.com/"
+                const response = await axios(url)
                 const date = new Date();
                 if(date.getMinutes() !== 0 && date.getMinutes() !== 30) return;
                 const data = await fetchData();
